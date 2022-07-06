@@ -2911,6 +2911,8 @@ class Airflow(AirflowBaseView):
 
         tasks = []
         for ti in tis:
+            if not dag.has_task(ti.task_id):
+                continue
             # prev_attempted_tries will reflect the currently running try_number
             # or the try_number of the last complete run
             # https://issues.apache.org/jira/browse/AIRFLOW-2143
@@ -2926,6 +2928,8 @@ class Airflow(AirflowBaseView):
         try_count = 1
         prev_task_id = ""
         for failed_task_instance in ti_fails:
+            if not dag.has_task(failed_task_instance.task_id):
+                continue
             if tf_count != 0 and failed_task_instance.task_id == prev_task_id:
                 try_count += 1
             else:
@@ -2944,7 +2948,7 @@ class Airflow(AirflowBaseView):
             task_dict['execution_date'] = dttm.isoformat()
             tasks.append(task_dict)
 
-        task_names = [ti.task_id for ti in tis]
+        task_names = [ti.task_id for ti in tis if dag.has_task(ti.task_id)]
         data = {
             'taskNames': task_names,
             'tasks': tasks,
